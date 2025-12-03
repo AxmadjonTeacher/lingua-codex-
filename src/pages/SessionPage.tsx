@@ -7,7 +7,7 @@ import { Notepad } from "@/components/Notepad";
 import { FlashcardReview } from "@/components/FlashcardReview";
 import { Button } from "@/components/ui/button";
 import { getSession, saveSession } from "@/lib/storage";
-import { createPhrase } from "@/lib/phrases";
+import { createPhrase, enrichPhraseWithAI } from "@/lib/phrases";
 import { Session } from "@/types";
 import { GraduationCap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -42,7 +42,7 @@ export default function SessionPage() {
     updateSession({ notes });
   }, [updateSession]);
 
-  const handleAddPhrase = useCallback((text: string) => {
+  const handleAddPhrase = useCallback(async (text: string) => {
     if (!session) return;
     if (session.phrases.length >= MAX_PHRASES) {
       toast({
@@ -53,11 +53,20 @@ export default function SessionPage() {
       return;
     }
     const newPhrase = createPhrase(text);
-    updateSession({ phrases: [...session.phrases, newPhrase] });
+    const updatedPhrases = [...session.phrases, newPhrase];
+    updateSession({ phrases: updatedPhrases });
+    
     toast({
       title: "Phrase added",
-      description: "Definition generated",
+      description: "Generating AI definition...",
     });
+
+    // Enrich with AI in background
+    const enrichedPhrase = await enrichPhraseWithAI(newPhrase);
+    const finalPhrases = updatedPhrases.map(p => 
+      p.id === enrichedPhrase.id ? enrichedPhrase : p
+    );
+    updateSession({ phrases: finalPhrases });
   }, [session, updateSession]);
 
   const handleRemovePhrase = useCallback((phraseId: string) => {

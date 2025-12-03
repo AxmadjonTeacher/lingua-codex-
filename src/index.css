@@ -46,6 +46,7 @@
     --sidebar-ring: 201 79% 46%;
 
     --notepad-line: 210 30% 88%;
+    --notepad-bg: 45 30% 97%;
   }
 
   .dark {
@@ -78,6 +79,7 @@
     --ring: 201 79% 50%;
 
     --notepad-line: 210 20% 25%;
+    --notepad-bg: 210 25% 14%;
   }
 }
 
