@@ -5,13 +5,15 @@ export interface Phrase {
   examples?: string[];
 }
 
-export interface VideoEntry {
+export interface Session {
   id: string;
+  title: string;
   youtubeUrl: string;
   youtubeId: string;
-  title: string;
+  notes: string;
   phrases: Phrase[];
   createdAt: number;
+  updatedAt: number;
 }
 
 export interface Flashcard {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Flashcard as FlashcardType, Phrase } from "@/types";
 import { Flashcard } from "./Flashcard";
 import { Button } from "@/components/ui/button";
@@ -45,10 +45,6 @@ export function FlashcardReview({ phrases, onClose }: FlashcardReviewProps) {
     }
   };
 
-  const handleRestart = () => {
-    initializeCards();
-  };
-
   if (flashcards.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -67,7 +63,7 @@ export function FlashcardReview({ phrases, onClose }: FlashcardReviewProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-heading text-2xl font-semibold text-foreground">
+        <h2 className="text-xl font-semibold text-foreground">
           Flashcard Review
         </h2>
         <Button variant="ghost" size="icon" onClick={onClose}>
@@ -75,14 +71,14 @@ export function FlashcardReview({ phrases, onClose }: FlashcardReviewProps) {
         </Button>
       </div>
 
-      {currentIndex < flashcards.length ? (
+      {currentIndex < flashcards.length && (
         <Flashcard
           flashcard={flashcards[currentIndex]}
           onNext={handleNext}
           currentIndex={currentIndex}
           totalCards={flashcards.length}
         />
-      ) : null}
+      )}
 
       {isComplete && (
         <div className="flex flex-col items-center gap-4 py-8">
@@ -90,7 +86,7 @@ export function FlashcardReview({ phrases, onClose }: FlashcardReviewProps) {
             🎉 You've reviewed all cards!
           </p>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={handleRestart}>
+            <Button variant="outline" onClick={initializeCards}>
               <RotateCcw className="mr-2 h-4 w-4" />
               Review Again
             </Button>

@@ -14,8 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        heading: ['Crimson Pro', 'serif'],
-        body: ['DM Sans', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",

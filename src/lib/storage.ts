@@ -1,8 +1,8 @@
-import { VideoEntry } from "@/types";
+import { Session } from "@/types";
 
-const STORAGE_KEY = "lingua-codex-phrase-box";
+const STORAGE_KEY = "lingua-codex-sessions";
 
-export function getPhraseBox(): VideoEntry[] {
+export function getSessions(): Session[] {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     return data ? JSON.parse(data) : [];
@@ -11,24 +11,24 @@ export function getPhraseBox(): VideoEntry[] {
   }
 }
 
-export function saveToPhraseBox(entry: VideoEntry): void {
-  const entries = getPhraseBox();
-  const existingIndex = entries.findIndex((e) => e.id === entry.id);
+export function saveSession(session: Session): void {
+  const sessions = getSessions();
+  const existingIndex = sessions.findIndex((s) => s.id === session.id);
   
   if (existingIndex >= 0) {
-    entries[existingIndex] = entry;
+    sessions[existingIndex] = { ...session, updatedAt: Date.now() };
   } else {
-    entries.push(entry);
+    sessions.push(session);
   }
   
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
 }
 
-export function removeFromPhraseBox(id: string): void {
-  const entries = getPhraseBox().filter((e) => e.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+export function deleteSession(id: string): void {
+  const sessions = getSessions().filter((s) => s.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
 }
 
-export function getVideoEntry(id: string): VideoEntry | undefined {
-  return getPhraseBox().find((e) => e.id === id);
+export function getSession(id: string): Session | undefined {
+  return getSessions().find((s) => s.id === id);
 }

@@ -30,13 +30,12 @@ export function Flashcard({ flashcard, onNext, currentIndex, totalCards }: Flash
       </div>
       
       <div 
-        className="flashcard-flip mx-auto h-80 w-full max-w-md cursor-pointer"
+        className="flashcard-flip mx-auto h-72 w-full max-w-md cursor-pointer"
         onClick={handleFlip}
       >
         <div className={cn("flashcard-inner relative h-full w-full", isFlipped && "flipped")}>
-          {/* Front - Definition */}
           <div className="flashcard-front absolute inset-0 flex flex-col items-center justify-center rounded-xl border border-border bg-card p-6 shadow-lg">
-            <p className="mb-4 text-center font-body text-lg text-foreground">
+            <p className="mb-4 text-center text-lg text-foreground">
               {flashcard.definition}
             </p>
             <p className="text-sm text-muted-foreground">
@@ -44,18 +43,15 @@ export function Flashcard({ flashcard, onNext, currentIndex, totalCards }: Flash
             </p>
           </div>
           
-          {/* Back - Phrase */}
-          <div className="flashcard-back absolute inset-0 flex flex-col items-center justify-center rounded-xl border-2 border-accent bg-card p-6 shadow-lg">
-            <h3 className="mb-4 text-center font-heading text-2xl font-bold text-primary">
+          <div className="flashcard-back absolute inset-0 flex flex-col items-center justify-center rounded-xl border-2 border-primary bg-card p-6 shadow-lg">
+            <h3 className="mb-4 text-center text-2xl font-bold text-primary">
               "{flashcard.phrase}"
             </h3>
-            <div className="max-h-24 overflow-y-auto">
-              {flashcard.examples.slice(0, 1).map((example, i) => (
-                <p key={i} className="text-center text-sm italic text-muted-foreground">
-                  {example}
-                </p>
-              ))}
-            </div>
+            {flashcard.examples.length > 0 && (
+              <p className="text-center text-sm italic text-muted-foreground">
+                {flashcard.examples[0]}
+              </p>
+            )}
             <p className="mt-4 text-sm text-muted-foreground">
               Tap to continue
             </p>

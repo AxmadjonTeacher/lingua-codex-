@@ -1,192 +1,96 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
-import { YouTubePlayer } from "@/components/YouTubePlayer";
-import { PhraseInput } from "@/components/PhraseInput";
-import { PhraseList } from "@/components/PhraseList";
-import { FlashcardReview } from "@/components/FlashcardReview";
+import { SessionCard } from "@/components/SessionCard";
+import { NewSessionDialog } from "@/components/NewSessionDialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { extractYouTubeId } from "@/lib/youtube";
-import { createPhrase } from "@/lib/phrases";
-import { saveToPhraseBox } from "@/lib/storage";
-import { Phrase, VideoEntry } from "@/types";
-import { Play, Save, GraduationCap } from "lucide-react";
+import { getSessions, saveSession, deleteSession } from "@/lib/storage";
+import { Session } from "@/types";
+import { Plus, PlayCircle } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const MAX_PHRASES = 35;
-
 export default function Index() {
-  const [youtubeUrl, setYoutubeUrl] = useState("");
-  const [videoId, setVideoId] = useState<string | null>(null);
-  const [phrases, setPhrases] = useState<Phrase[]>([]);
-  const [showFlashcards, setShowFlashcards] = useState(false);
+  const navigate = useNavigate();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleLoadVideo = () => {
-    const id = extractYouTubeId(youtubeUrl);
-    if (id) {
-      setVideoId(id);
-      setPhrases([]);
-    } else {
-      toast({
-        title: "Invalid URL",
-        description: "Please enter a valid YouTube URL",
-        variant: "destructive",
-      });
-    }
-  };
+  useEffect(() => {
+    setSessions(getSessions());
+  }, []);
 
-  const handleAddPhrase = (text: string) => {
-    if (phrases.length >= MAX_PHRASES) {
-      toast({
-        title: "Limit reached",
-        description: `Maximum ${MAX_PHRASES} phrases allowed per video`,
-        variant: "destructive",
-      });
-      return;
-    }
-    const newPhrase = createPhrase(text);
-    setPhrases((prev) => [...prev, newPhrase]);
-    toast({
-      title: "Phrase added",
-      description: "Definition and examples have been generated",
-    });
-  };
-
-  const handleRemovePhrase = (id: string) => {
-    setPhrases((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const handleSaveToPhraseBox = () => {
-    if (!videoId || phrases.length === 0) {
-      toast({
-        title: "Nothing to save",
-        description: "Add some phrases before saving",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const entry: VideoEntry = {
+  const handleCreateSession = (title: string, youtubeUrl: string, youtubeId: string) => {
+    const newSession: Session = {
       id: crypto.randomUUID(),
+      title,
       youtubeUrl,
-      youtubeId: videoId,
-      title: `Video Study Session`,
-      phrases,
+      youtubeId,
+      notes: "",
+      phrases: [],
       createdAt: Date.now(),
+      updatedAt: Date.now(),
     };
 
-    saveToPhraseBox(entry);
-    toast({
-      title: "Saved!",
-      description: "Video and phrases added to your Phrase Box",
-    });
+    saveSession(newSession);
+    setSessions(getSessions());
+    navigate(`/session/${newSession.id}`);
   };
 
-  if (showFlashcards) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto max-w-2xl px-4 py-8">
-          <FlashcardReview
-            phrases={phrases}
-            onClose={() => setShowFlashcards(false)}
-          />
-        </main>
-      </div>
-    );
-  }
+  const handleDeleteSession = (id: string) => {
+    deleteSession(id);
+    setSessions(getSessions());
+    toast({
+      title: "Session deleted",
+      description: "Your session has been removed",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="container mx-auto max-w-5xl px-4 py-8">
-        <div className="mb-8 text-center">
-          <h1 className="font-heading text-4xl font-bold text-foreground sm:text-5xl">
-            Study Phrases from Videos
-          </h1>
-          <p className="mt-3 text-lg text-muted-foreground">
-            Learn new phrases and idioms from your favorite YouTube content
-          </p>
-        </div>
-
-        {/* URL Input */}
-        <div className="mb-8">
-          <div className="flex gap-3">
-            <Input
-              type="url"
-              placeholder="Paste a YouTube URL..."
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLoadVideo()}
-              className="flex-1"
-            />
-            <Button onClick={handleLoadVideo}>
-              <Play className="mr-2 h-4 w-4" />
-              Load
-            </Button>
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Your Codex</h1>
+            <p className="mt-1 text-muted-foreground">
+              Continue learning where you left off
+            </p>
           </div>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Session
+          </Button>
         </div>
 
-        {videoId && (
-          <div className="grid gap-8 lg:grid-cols-2">
-            {/* Video Section */}
-            <div className="space-y-6">
-              <YouTubePlayer videoId={videoId} />
-              
-              <PhraseInput
-                onAddPhrase={handleAddPhrase}
-                phraseCount={phrases.length}
-                maxPhrases={MAX_PHRASES}
+        {sessions.length > 0 ? (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {sessions.map((session) => (
+              <SessionCard
+                key={session.id}
+                session={session}
+                onDelete={handleDeleteSession}
               />
-            </div>
-
-            {/* Phrases Section */}
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="font-heading text-2xl font-semibold text-foreground">
-                  Your Phrases
-                </h2>
-              </div>
-
-              <PhraseList phrases={phrases} onRemove={handleRemovePhrase} />
-
-              {phrases.length > 0 && (
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Button
-                    variant="outline"
-                    onClick={handleSaveToPhraseBox}
-                    className="flex-1"
-                  >
-                    <Save className="mr-2 h-4 w-4" />
-                    Add to Phrase Box
-                  </Button>
-                  <Button
-                    variant="accent"
-                    onClick={() => setShowFlashcards(true)}
-                    className="flex-1"
-                  >
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                    Create Flashcards
-                  </Button>
-                </div>
-              )}
-            </div>
+            ))}
           </div>
-        )}
-
-        {!videoId && (
-          <div className="mx-auto max-w-md rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center">
-            <GraduationCap className="mx-auto h-12 w-12 text-muted-foreground" />
-            <h3 className="mt-4 font-heading text-xl font-medium text-foreground">
-              Get Started
-            </h3>
-            <p className="mt-2 text-muted-foreground">
-              Paste a YouTube URL above to start studying phrases from videos
+        ) : (
+          <div className="card-dashed flex flex-col items-center justify-center px-8 py-16">
+            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+              <PlayCircle className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-medium text-foreground">No sessions yet</h3>
+            <p className="mt-1 text-center text-muted-foreground">
+              Create your first session by pasting a YouTube<br />
+              URL to start building your Lingua Codex.
             </p>
           </div>
         )}
       </main>
+
+      <NewSessionDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onCreateSession={handleCreateSession}
+      />
     </div>
   );
 }
