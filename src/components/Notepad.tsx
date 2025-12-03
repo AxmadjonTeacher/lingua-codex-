@@ -5,16 +5,18 @@ interface NotepadProps {
 
 export function Notepad({ value, onChange }: NotepadProps) {
   return (
-    <div className="flex h-full flex-col rounded-lg border border-border bg-card">
-      <div className="flex items-center justify-end border-b border-border px-4 py-2">
-        <span className="text-xs text-muted-foreground">Notes autosave</span>
+    <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-[hsl(var(--notepad-bg))]">
+      <div className="absolute right-3 top-3 z-10">
+        <span className="rounded-md bg-muted/80 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+          Notes autosave
+        </span>
       </div>
-      <div className="flex-1 p-4">
+      <div className="flex-1 overflow-y-auto p-6 pt-4">
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Start taking notes here... (e.g., grammar rules, cultural context)"
-          className="notepad-lines h-full w-full resize-none bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
+          placeholder="Start taking notes here..."
+          className="notepad-lines h-full min-h-[500px] w-full resize-none bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
       </div>
     </div>
