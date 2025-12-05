@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = "AIzaSyDbHLW4obBjfMToN0qiT4C5JDeJNY9gZnE";
+const GEMINI_API_KEY = "AIzaSyD5mpFFCoJ4iQ7oYakZOaRDYz_I4eGWXgM";
 
 interface GeminiResponse {
   definition: string;
@@ -8,14 +8,14 @@ interface GeminiResponse {
 export async function generatePhraseDefinition(phrase: string): Promise<GeminiResponse> {
   const prompt = `You are a language learning assistant. For the English phrase or word "${phrase}", provide:
 1. A clear, concise definition (1-2 sentences)
-2. Two natural example sentences showing how to use it
+2. Two relevant example sentences showing how to use it in context
 
 Respond in this exact JSON format only, no markdown:
 {"definition": "your definition here", "examples": ["example 1", "example 2"]}`;
 
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
       {
         method: "POST",
         headers: {
