@@ -13,12 +13,19 @@ export default function Index() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const loadSessions = async () => {
+    const data = await getSessions();
+    setSessions(data);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    setSessions(getSessions());
+    loadSessions();
   }, []);
 
-  const handleCreateSession = (title: string, youtubeUrl: string, youtubeId: string) => {
+  const handleCreateSession = async (title: string, youtubeUrl: string, youtubeId: string) => {
     const newSession: Session = {
       id: crypto.randomUUID(),
       title,
@@ -30,14 +37,13 @@ export default function Index() {
       updatedAt: Date.now(),
     };
 
-    saveSession(newSession);
-    setSessions(getSessions());
+    await saveSession(newSession);
     navigate(`/session/${newSession.id}`);
   };
 
-  const handleDeleteSession = (id: string) => {
-    deleteSession(id);
-    setSessions(getSessions());
+  const handleDeleteSession = async (id: string) => {
+    await deleteSession(id);
+    await loadSessions();
     toast({
       title: "Session deleted",
       description: "Your session has been removed",
@@ -49,6 +55,12 @@ export default function Index() {
       <Header />
       
       <main className="container mx-auto max-w-5xl px-4 py-8">
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <p className="text-muted-foreground">Loading sessions...</p>
+          </div>
+        ) : (
+          <>
         <div className="mb-8 flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground">Your Codex</h1>
@@ -83,6 +95,8 @@ export default function Index() {
               URL to start building your Lingua Codex.
             </p>
           </div>
+        )}
+          </>
         )}
       </main>
 

@@ -3,18 +3,23 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { LogOut, Mail } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { User as UserIcon, Mail } from "lucide-react";
+import { migrateLocalSessions } from "@/lib/storage";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setUser(session?.user ?? null);
+        // Migrate local sessions when user logs in
+        if (session?.user) {
+          setTimeout(() => {
+            migrateLocalSessions();
+          }, 0);
+        }
       }
     );
 
@@ -24,11 +29,6 @@ export function Header() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    toast({ title: "Signed out successfully" });
-  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card">
@@ -43,9 +43,9 @@ export function Header() {
         </Link>
 
         {user ? (
-          <Button variant="outline" size="sm" className="gap-2" onClick={handleSignOut}>
-            <LogOut className="h-4 w-4" />
-            Sign Out
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/profile")}>
+            <UserIcon className="h-4 w-4" />
+            Profile
           </Button>
         ) : (
           <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/auth")}>

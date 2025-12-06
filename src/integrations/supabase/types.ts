@@ -41,6 +41,42 @@ export type Database = {
         }
         Relationships: []
       }
+      sessions: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          phrases: Json | null
+          title: string
+          updated_at: string
+          user_id: string
+          youtube_id: string
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          phrases?: Json | null
+          title: string
+          updated_at?: string
+          user_id: string
+          youtube_id: string
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          phrases?: Json | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+          youtube_id?: string
+          youtube_url?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

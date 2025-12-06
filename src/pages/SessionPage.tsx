@@ -21,14 +21,17 @@ export default function SessionPage() {
   const [showFlashcards, setShowFlashcards] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      const found = getSession(id);
-      if (found) {
-        setSession(found);
-      } else {
-        navigate("/");
+    const loadSession = async () => {
+      if (id) {
+        const found = await getSession(id);
+        if (found) {
+          setSession(found);
+        } else {
+          navigate("/");
+        }
       }
-    }
+    };
+    loadSession();
   }, [id, navigate]);
 
   const updateSession = useCallback((updates: Partial<Session>) => {
