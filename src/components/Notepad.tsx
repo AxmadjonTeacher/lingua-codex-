@@ -16,75 +16,67 @@ interface SelectionPopup {
 }
 
 export function Notepad({ value, onChange, onSavePhrase }: NotepadProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [popup, setPopup] = useState<SelectionPopup>({ visible: false, x: 0, y: 0, text: "" });
 
+  // Handle mouse up on textarea to detect text selection
+  const handleMouseUp = (e: React.MouseEvent<HTMLTextAreaElement>) => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+
+    if (start !== end) {
+      const text = textarea.value.substring(start, end).trim();
+      // Only show if text is valid and not a whole paragraph
+      if (text.length > 0 && text.length < 100) {
+        setPopup({
+          visible: true,
+          x: e.clientX,
+          y: e.clientY - 40, // Position above cursor
+          text: text,
+        });
+        return;
+      }
+    }
+    setPopup({ visible: false, x: 0, y: 0, text: "" });
+  };
+
+  // Close popup when clicking outside
   useEffect(() => {
-    const handleMouseUp = () => {
-      const selection = window.getSelection();
-      if (!selection || selection.isCollapsed) {
-        setPopup({ visible: false, x: 0, y: 0, text: "" });
-        return;
-      }
-
-      const text = selection.toString().trim();
-      if (!text || text.length > 100) {
-        setPopup({ visible: false, x: 0, y: 0, text: "" });
-        return;
-      }
-
-      // Check if selection is within our container
-      const range = selection.getRangeAt(0);
-      if (!containerRef.current?.contains(range.commonAncestorContainer)) {
-        return;
-      }
-
-      const rect = range.getBoundingClientRect();
-      const containerRect = containerRef.current.getBoundingClientRect();
-      
-      setPopup({
-        visible: true,
-        x: rect.left - containerRect.left + rect.width / 2,
-        y: rect.top - containerRect.top - 40,
-        text,
-      });
-    };
-
-    const handleMouseDown = (e: MouseEvent) => {
-      // Hide popup when clicking outside of it
-      if (!(e.target as HTMLElement).closest('[data-selection-popup]')) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (popup.visible && !(e.target as Element).closest('.selection-popover')) {
         setPopup({ visible: false, x: 0, y: 0, text: "" });
       }
     };
-
-    document.addEventListener("mouseup", handleMouseUp);
-    document.addEventListener("mousedown", handleMouseDown);
-
-    return () => {
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.removeEventListener("mousedown", handleMouseDown);
-    };
-  }, []);
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [popup.visible]);
 
   const handleSavePhrase = () => {
     if (popup.text && onSavePhrase) {
       onSavePhrase(popup.text);
       setPopup({ visible: false, x: 0, y: 0, text: "" });
-      window.getSelection()?.removeAllRanges();
+      // Clear selection
+      if (textareaRef.current) {
+        textareaRef.current.selectionStart = textareaRef.current.selectionEnd;
+      }
     }
   };
 
   return (
-    <div 
-      ref={containerRef}
-      className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-[hsl(var(--notepad-bg))]"
-    >
-      {/* Selection Popup */}
+    <>
+      {/* Selection Popup - Fixed positioning */}
       {popup.visible && (
         <div
-          data-selection-popup
-          className="absolute z-20 transform -translate-x-1/2"
-          style={{ left: popup.x, top: Math.max(0, popup.y) }}
+          className="selection-popover fixed z-50"
+          style={{ 
+            left: popup.x, 
+            top: popup.y,
+            transform: 'translateX(-50%)'
+          }}
         >
           <Button
             size="sm"
@@ -97,45 +89,23 @@ export function Notepad({ value, onChange, onSavePhrase }: NotepadProps) {
         </div>
       )}
 
-      <div className="absolute right-3 top-3 z-10">
-        <span className="rounded-md bg-muted/80 px-3 py-1.5 text-xs font-medium text-muted-foreground">
-          Notes autosave
-        </span>
+      <div className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-[hsl(var(--notepad-bg))]">
+        <div className="absolute right-3 top-3 z-10">
+          <span className="rounded-md bg-muted/80 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+            Notes autosave
+          </span>
+        </div>
+        <div className="flex-1 overflow-y-auto pt-4">
+          <textarea
+            ref={textareaRef}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            onMouseUp={handleMouseUp}
+            placeholder="Start taking notes here..."
+            className="notepad-lines h-full min-h-[500px] w-full resize-none bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+          />
+        </div>
       </div>
-      <div className="flex-1 overflow-y-auto pt-4">
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onMouseUp={() => {
-            setTimeout(() => {
-              const selection = window.getSelection();
-              if (!selection || selection.isCollapsed) {
-                return;
-              }
-
-              const text = selection.toString().trim();
-              if (!text || text.length > 100) {
-                return;
-              }
-
-              const range = selection.getRangeAt(0);
-              const rect = range.getBoundingClientRect();
-              const containerRect = containerRef.current?.getBoundingClientRect();
-              
-              if (containerRect) {
-                setPopup({
-                  visible: true,
-                  x: rect.left - containerRect.left + rect.width / 2,
-                  y: rect.top - containerRect.top - 40,
-                  text,
-                });
-              }
-            }, 10);
-          }}
-          placeholder="Start taking notes here..."
-          className="notepad-lines h-full min-h-[500px] w-full resize-none bg-transparent text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
-        />
-      </div>
-    </div>
+    </>
   );
 }
