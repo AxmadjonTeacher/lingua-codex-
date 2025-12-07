@@ -10,7 +10,16 @@ export function Footer() {
       >
         Yodgorov Axmadjon
       </a>{" "}
-      | Al-Xorazmiy School
+      |{" "}
+      <a
+        href="https://alxorazmiymaktabi.vercel.app"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hover:text-foreground transition-colors inline-flex items-center gap-1 align-middle"
+      >
+        Al-Xorazmiy School
+        <img src="/school_logo.png" alt="Logo" className="h-4 w-auto object-contain" />
+      </a>
     </footer>
   );
 }
