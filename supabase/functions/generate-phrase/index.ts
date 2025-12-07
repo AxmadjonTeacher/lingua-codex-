@@ -6,17 +6,16 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const { phrase } = await req.json();
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     if (!phrase) {
@@ -25,46 +24,43 @@ serve(async (req) => {
 
     console.log(`Generating definition for phrase: "${phrase}"`);
 
-    const prompt = `You are a language learning assistant. For the English phrase or word "${phrase}", provide:
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a language learning assistant. Respond only in valid JSON format without any markdown.'
+          },
+          {
+            role: 'user',
+            content: `For the English phrase or word "${phrase}", provide:
 1. A clear, concise definition (1-2 sentences)
 2. Two relevant example sentences showing how to use it in context
 
-Respond in this exact JSON format only, no markdown:
-{"definition": "your definition here", "examples": ["example 1", "example 2"]}`;
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [{ text: prompt }],
-            },
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 300,
-          },
-        }),
-      }
-    );
+Respond in this exact JSON format only:
+{"definition": "your definition here", "examples": ["example 1", "example 2"]}`
+          }
+        ],
+      }),
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Gemini API error response:", errorText);
+      console.error("Lovable AI error response:", errorText);
       throw new Error("Failed to generate definition");
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+    const text = data.choices?.[0]?.message?.content || "";
     
-    console.log("Gemini response text:", text);
+    console.log("Lovable AI response text:", text);
 
-    // Parse the JSON response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -76,7 +72,7 @@ Respond in this exact JSON format only, no markdown:
       });
     }
 
-    throw new Error("Invalid response format from Gemini");
+    throw new Error("Invalid response format from AI");
   } catch (error) {
     console.error('Error in generate-phrase function:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
