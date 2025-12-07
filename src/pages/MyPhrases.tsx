@@ -21,7 +21,6 @@ interface PhraseWithSource extends Phrase {
 export default function MyPhrases() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [studyIds, setStudyIds] = useState<Set<string>>(new Set());
   const [showFlashcards, setShowFlashcards] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -59,23 +58,35 @@ export default function MyPhrases() {
   const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
 
   const studyPhrases = useMemo(() => {
-    return allPhrases.filter((p) => studyIds.has(p.id));
-  }, [allPhrases, studyIds]);
+    return allPhrases.filter((p) => p.isStudy);
+  }, [allPhrases]);
 
-  const toggleStudy = (phraseId: string) => {
-    setStudyIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(phraseId)) {
-        next.delete(phraseId);
-      } else {
-        next.add(phraseId);
-      }
-      return next;
-    });
+  const toggleStudy = async (phraseId: string, sessionId: string) => {
+    const session = sessions.find((s) => s.id === sessionId);
+    if (!session) return;
+
+    const updatedPhrases = session.phrases.map((p) =>
+      p.id === phraseId ? { ...p, isStudy: !p.isStudy } : p
+    );
+    const updatedSession = { ...session, phrases: updatedPhrases };
+
+    await saveSession(updatedSession);
+    setSessions((prev) => prev.map((s) => (s.id === sessionId ? updatedSession : s)));
   };
 
-  const resetAll = () => {
-    setStudyIds(new Set());
+  const resetAll = async () => {
+    const updates = sessions.map(async (session) => {
+      if (session.phrases.some(p => p.isStudy)) {
+        const updatedPhrases = session.phrases.map(p => ({ ...p, isStudy: false }));
+        const updatedSession = { ...session, phrases: updatedPhrases };
+        await saveSession(updatedSession);
+        return updatedSession;
+      }
+      return session;
+    });
+
+    const updatedSessions = await Promise.all(updates);
+    setSessions(updatedSessions);
   };
 
   const handlePlayAudio = async (audioData?: string) => {
@@ -93,18 +104,13 @@ export default function MyPhrases() {
   const handleDeletePhrase = async (sessionId: string, phraseId: string) => {
     const session = sessions.find((s) => s.id === sessionId);
     if (!session) return;
-    
+
     const updatedPhrases = session.phrases.filter((p) => p.id !== phraseId);
     const updatedSession = { ...session, phrases: updatedPhrases };
-    
+
     await saveSession(updatedSession);
     setSessions((prev) => prev.map((s) => (s.id === sessionId ? updatedSession : s)));
-    setStudyIds((prev) => {
-      const next = new Set(prev);
-      next.delete(phraseId);
-      return next;
-    });
-    
+
     toast({
       title: "Phrase deleted",
       description: "The phrase has been removed from your collection",
@@ -133,17 +139,17 @@ export default function MyPhrases() {
             <h1 className="text-3xl font-bold text-foreground">My Phrases</h1>
             <p className="mt-1 text-muted-foreground">
               Your collection of {allPhrases.length} words.{" "}
-              <span className="text-primary">{studyIds.size} marked for study.</span>
+              <span className="text-primary">{Object.values(phrasesBySession).reduce((acc, s) => acc + s.phrases.filter(p => p.isStudy).length, 0)} marked for study.</span>
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" onClick={resetAll} disabled={studyIds.size === 0}>
+            <Button variant="outline" onClick={resetAll} disabled={studyPhrases.length === 0}>
               <RotateCcw className="mr-2 h-4 w-4" />
               Reset
             </Button>
             <Button
               className="bg-purple-500 hover:bg-purple-600"
-              disabled={studyIds.size === 0}
+              disabled={studyPhrases.length === 0}
               onClick={() => setShowQuiz(true)}
             >
               <BookCheck className="mr-2 h-4 w-4" />
@@ -179,8 +185,8 @@ export default function MyPhrases() {
           <div className="space-y-4">
             {Object.entries(phrasesBySession).map(([sessionId, { title, phrases }]) => {
               const isOpen = openFolders.has(sessionId);
-              const markedCount = phrases.filter((p) => studyIds.has(p.id)).length;
-              
+              const markedCount = phrases.filter((p) => p.isStudy).length;
+
               return (
                 <Collapsible
                   key={sessionId}
@@ -220,16 +226,15 @@ export default function MyPhrases() {
                       {phrases.map((phrase) => (
                         <div
                           key={phrase.id}
-                          className={`rounded-xl border bg-card p-5 transition-all ${
-                            studyIds.has(phrase.id)
+                          className={`rounded-xl border bg-card p-5 transition-all ${phrase.isStudy
                               ? "border-primary shadow-md"
                               : "border-border"
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start gap-4">
                             <Checkbox
-                              checked={studyIds.has(phrase.id)}
-                              onCheckedChange={() => toggleStudy(phrase.id)}
+                              checked={phrase.isStudy || false}
+                              onCheckedChange={() => toggleStudy(phrase.id, sessionId)}
                               className="mt-1"
                             />
                             <div className="flex-1">

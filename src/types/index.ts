@@ -5,6 +5,7 @@ export interface Phrase {
   examples?: string[];
   audioData?: string;
   createdAt?: number;
+  isStudy?: boolean;
 }
 
 export interface Session {
