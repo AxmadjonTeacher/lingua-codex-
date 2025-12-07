@@ -7,7 +7,7 @@ import { NewSessionDialog } from "@/components/NewSessionDialog";
 import { Button } from "@/components/ui/button";
 import { getSessions, saveSession, deleteSession } from "@/lib/storage";
 import { Session } from "@/types";
-import { Plus, PlayCircle } from "lucide-react";
+import { Plus, PlayCircle, BookOpen } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Index() {
@@ -69,10 +69,16 @@ export default function Index() {
               Continue learning where you left off
             </p>
           </div>
-          <Button onClick={() => setDialogOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Session
-          </Button>
+          <div className="flex gap-3">
+            <Button variant="outline" onClick={() => navigate("/my-phrases")}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              My Phrases
+            </Button>
+            <Button onClick={() => setDialogOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              New Session
+            </Button>
+          </div>
         </div>
 
         {sessions.length > 0 ? (

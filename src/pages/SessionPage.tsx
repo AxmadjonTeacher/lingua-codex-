@@ -4,7 +4,7 @@ import { Header } from "@/components/Header";
 import { YouTubePlayer } from "@/components/YouTubePlayer";
 import { PhraseBox } from "@/components/PhraseBox";
 import { Notepad } from "@/components/Notepad";
-import { FlashcardReview } from "@/components/FlashcardReview";
+import { FlashcardModal } from "@/components/FlashcardModal";
 import { Button } from "@/components/ui/button";
 import { getSession, saveSession } from "@/lib/storage";
 import { createPhrase, enrichPhraseWithAI } from "@/lib/phrases";
@@ -81,20 +81,6 @@ export default function SessionPage() {
     return null;
   }
 
-  if (showFlashcards) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto max-w-2xl px-4 py-8">
-          <FlashcardReview
-            phrases={session.phrases}
-            onClose={() => setShowFlashcards(false)}
-          />
-        </main>
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <Header />
@@ -135,6 +121,12 @@ export default function SessionPage() {
           />
         </div>
       </main>
+
+      <FlashcardModal
+        open={showFlashcards}
+        onClose={() => setShowFlashcards(false)}
+        phrases={session.phrases}
+      />
     </div>
   );
 }

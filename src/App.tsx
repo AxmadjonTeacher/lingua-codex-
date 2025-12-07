@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import SessionPage from "./pages/SessionPage";
 import Auth from "./pages/Auth";
 import Profile from "./pages/Profile";
+import MyPhrases from "./pages/MyPhrases";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/my-phrases" element={<MyPhrases />} />
           <Route path="/session/:id" element={<SessionPage />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
