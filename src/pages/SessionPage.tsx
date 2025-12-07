@@ -12,7 +12,7 @@ import { Session } from "@/types";
 import { GraduationCap } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
-const MAX_PHRASES = 35;
+const MAX_PHRASES = 40;
 
 export default function SessionPage() {
   const { id } = useParams<{ id: string }>();
@@ -47,16 +47,23 @@ export default function SessionPage() {
 
   const handleAddPhrase = useCallback(async (text: string) => {
     if (!session) return;
-    if (session.phrases.length >= MAX_PHRASES) {
-      toast({
-        title: "Limit reached",
-        description: `Maximum ${MAX_PHRASES} phrases allowed`,
-        variant: "destructive",
-      });
-      return;
-    }
+    
     const newPhrase = createPhrase(text);
-    const updatedPhrases = [...session.phrases, newPhrase];
+    let updatedPhrases = [...session.phrases, newPhrase];
+    
+    // Auto-delete oldest phrase if exceeding limit
+    if (updatedPhrases.length > MAX_PHRASES) {
+      // Sort by createdAt to find oldest (smallest timestamp)
+      const sortedByAge = [...updatedPhrases].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+      const oldestPhrase = sortedByAge[0];
+      updatedPhrases = updatedPhrases.filter(p => p.id !== oldestPhrase.id);
+      
+      toast({
+        title: "Oldest phrase removed",
+        description: `"${oldestPhrase.text}" was removed to make room (40 phrase limit)`,
+      });
+    }
+    
     updateSession({ phrases: updatedPhrases });
     
     toast({
