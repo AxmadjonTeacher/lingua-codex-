@@ -78,13 +78,13 @@ export function Notepad({ value, onChange, onSavePhrase }: NotepadProps) {
             transform: 'translateX(-50%)'
           }}
         >
-          <Button
+        <Button
             size="sm"
             onClick={handleSavePhrase}
-            className="shadow-lg whitespace-nowrap"
+            className="shadow-md whitespace-nowrap h-6 px-2 text-[10px] gap-0.5"
           >
-            Save "{popup.text.length > 15 ? popup.text.substring(0, 15) + "..." : popup.text}"
-            <Plus className="ml-1 h-3 w-3" />
+            Save "{popup.text.length > 10 ? popup.text.substring(0, 10) + "…" : popup.text}"
+            <Plus className="h-2.5 w-2.5" />
           </Button>
         </div>
       )}
