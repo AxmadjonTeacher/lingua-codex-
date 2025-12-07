@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { User as UserIcon, Mail } from "lucide-react";
+import { User as UserIcon, Mail, Gamepad2 } from "lucide-react";
 import { migrateLocalSessions } from "@/lib/storage";
 
 export function Header() {
@@ -46,17 +46,26 @@ export function Header() {
           </span>
         </Link>
 
-        {user ? (
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/profile")}>
-            <UserIcon className="h-4 w-4" />
-            {user.user_metadata?.full_name || "Profile"}
-          </Button>
-        ) : (
-          <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/auth")}>
-            <Mail className="h-4 w-4" />
-            Email
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          <a href="https://aljeopardy.vercel.app" target="_blank" rel="noopener noreferrer">
+            <Button variant="outline" size="sm" className="gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border-purple-200">
+              <Gamepad2 className="h-4 w-4" />
+              Fun & Games
+            </Button>
+          </a>
+
+          {user ? (
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/profile")}>
+              <UserIcon className="h-4 w-4" />
+              {user.user_metadata?.full_name || "Profile"}
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/auth")}>
+              <Mail className="h-4 w-4" />
+              Email
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   );
