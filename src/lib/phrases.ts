@@ -12,16 +12,28 @@ export function createPhrase(text: string): Phrase {
 }
 
 export async function enrichPhraseWithAI(phrase: Phrase): Promise<Phrase> {
-  // Run definition and audio generation in parallel
-  const [definitionResult, audioResult] = await Promise.all([
-    generatePhraseDefinition(phrase.text),
-    generateAudioPronunciation(phrase.text),
-  ]);
+  try {
+    // Run definition and audio generation in parallel
+    const [definitionResult, audioResult] = await Promise.all([
+      generatePhraseDefinition(phrase.text),
+      generateAudioPronunciation(phrase.text),
+    ]);
 
-  return {
-    ...phrase,
-    definition: definitionResult.definition,
-    examples: definitionResult.examples,
-    audioData: audioResult.audioData || undefined,
-  };
+    return {
+      ...phrase,
+      definition: definitionResult.definition,
+      examples: definitionResult.examples,
+      audioData: audioResult.audioData || undefined,
+    };
+  } catch (error) {
+    console.error("Error enriching phrase:", error);
+    // Return phrase with error state but still try to get audio
+    const audioResult = await generateAudioPronunciation(phrase.text).catch(() => ({ audioData: null }));
+    return {
+      ...phrase,
+      definition: `Unable to generate definition for "${phrase.text}". Please try again.`,
+      examples: [],
+      audioData: audioResult.audioData || undefined,
+    };
+  }
 }
