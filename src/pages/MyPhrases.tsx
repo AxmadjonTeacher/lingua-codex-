@@ -166,9 +166,9 @@ export default function MyPhrases() {
                         <h3 className="text-xl font-bold text-foreground">{phrase.text}</h3>
                         {phrase.audioData && (
                           <Button
-                            variant="ghost"
+                            variant="outline"
                             size="sm"
-                            className="text-primary hover:text-primary/80"
+                            className="text-primary border-primary/30 hover:bg-primary/10 hover:text-primary"
                             onClick={() => handlePlayAudio(phrase.audioData)}
                           >
                             <Volume2 className="mr-1 h-4 w-4" />
