@@ -7,7 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getSessions } from "@/lib/storage";
 import { playPCM } from "@/lib/audioService";
 import { Phrase, Session } from "@/types";
-import { RotateCcw, BookCheck, GraduationCap, ArrowLeft, Volume2 } from "lucide-react";
+import { RotateCcw, BookCheck, GraduationCap, ArrowLeft, Volume2, FolderOpen, FolderClosed, ChevronDown, ChevronRight } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { FlashcardModal } from "@/components/FlashcardModal";
 import { QuizModal } from "@/components/QuizModal";
 
@@ -33,19 +34,28 @@ export default function MyPhrases() {
     loadSessions();
   }, []);
 
-  const allPhrases = useMemo(() => {
-    const phrases: PhraseWithSource[] = [];
+  const phrasesBySession = useMemo(() => {
+    const grouped: Record<string, { title: string; phrases: PhraseWithSource[] }> = {};
     sessions.forEach((session) => {
-      session.phrases.forEach((phrase) => {
-        phrases.push({
-          ...phrase,
-          sourceTitle: session.title,
-          sessionId: session.id,
-        });
-      });
+      if (session.phrases.length > 0) {
+        grouped[session.id] = {
+          title: session.title,
+          phrases: session.phrases.map((phrase) => ({
+            ...phrase,
+            sourceTitle: session.title,
+            sessionId: session.id,
+          })).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)),
+        };
+      }
     });
-    return phrases.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    return grouped;
   }, [sessions]);
+
+  const allPhrases = useMemo(() => {
+    return Object.values(phrasesBySession).flatMap((s) => s.phrases);
+  }, [phrasesBySession]);
+
+  const [openFolders, setOpenFolders] = useState<Set<string>>(new Set());
 
   const studyPhrases = useMemo(() => {
     return allPhrases.filter((p) => studyIds.has(p.id));
@@ -145,63 +155,107 @@ export default function MyPhrases() {
           </div>
         ) : (
           <div className="space-y-4">
-            {allPhrases.map((phrase) => (
-              <div
-                key={phrase.id}
-                className={`rounded-xl border bg-card p-6 transition-all ${
-                  studyIds.has(phrase.id)
-                    ? "border-primary shadow-md"
-                    : "border-border"
-                }`}
-              >
-                <div className="flex items-start gap-4">
-                  <Checkbox
-                    checked={studyIds.has(phrase.id)}
-                    onCheckedChange={() => toggleStudy(phrase.id)}
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold text-foreground">{phrase.text}</h3>
-                        {phrase.audioData && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-primary border-primary/30 hover:bg-primary/10 hover:text-primary"
-                            onClick={() => handlePlayAudio(phrase.audioData)}
-                          >
-                            <Volume2 className="mr-1 h-4 w-4" />
-                            Play Audio
-                          </Button>
+            {Object.entries(phrasesBySession).map(([sessionId, { title, phrases }]) => {
+              const isOpen = openFolders.has(sessionId);
+              const markedCount = phrases.filter((p) => studyIds.has(p.id)).length;
+              
+              return (
+                <Collapsible
+                  key={sessionId}
+                  open={isOpen}
+                  onOpenChange={(open) => {
+                    setOpenFolders((prev) => {
+                      const next = new Set(prev);
+                      if (open) next.add(sessionId);
+                      else next.delete(sessionId);
+                      return next;
+                    });
+                  }}
+                >
+                  <CollapsibleTrigger asChild>
+                    <div className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-muted/50">
+                      {isOpen ? (
+                        <FolderOpen className="h-5 w-5 text-primary" />
+                      ) : (
+                        <FolderClosed className="h-5 w-5 text-muted-foreground" />
+                      )}
+                      <span className="flex-1 font-medium text-foreground">{title}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {phrases.length} phrase{phrases.length !== 1 ? "s" : ""}
+                        {markedCount > 0 && (
+                          <span className="ml-2 text-primary">({markedCount} marked)</span>
                         )}
-                      </div>
-                      <div className="text-right text-sm text-muted-foreground">
-                        <div>{formatDate(phrase.createdAt)}</div>
-                        <div className="text-purple-500">{phrase.sourceTitle}</div>
-                      </div>
+                      </span>
+                      {isOpen ? (
+                        <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                      )}
                     </div>
-                    {phrase.definition && (
-                      <p className="mt-3 border-l-4 border-primary pl-4 italic text-foreground">
-                        {phrase.definition}
-                      </p>
-                    )}
-                    {phrase.examples && phrase.examples.length > 0 && (
-                      <div className="mt-4 rounded-lg bg-muted/50 p-4">
-                        <ul className="space-y-2">
-                          {phrase.examples.map((example, i) => (
-                            <li key={i} className="flex items-start gap-2 text-foreground">
-                              <span className="text-primary">•</span>
-                              {example}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-2 space-y-3 pl-4">
+                      {phrases.map((phrase) => (
+                        <div
+                          key={phrase.id}
+                          className={`rounded-xl border bg-card p-5 transition-all ${
+                            studyIds.has(phrase.id)
+                              ? "border-primary shadow-md"
+                              : "border-border"
+                          }`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <Checkbox
+                              checked={studyIds.has(phrase.id)}
+                              onCheckedChange={() => toggleStudy(phrase.id)}
+                              className="mt-1"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <h3 className="text-lg font-bold text-foreground">{phrase.text}</h3>
+                                  {phrase.audioData && (
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-primary border-primary/30 hover:bg-primary/10 hover:text-primary"
+                                      onClick={() => handlePlayAudio(phrase.audioData)}
+                                    >
+                                      <Volume2 className="mr-1 h-4 w-4" />
+                                      Play
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {formatDate(phrase.createdAt)}
+                                </div>
+                              </div>
+                              {phrase.definition && (
+                                <p className="mt-2 border-l-4 border-primary pl-4 text-sm italic text-foreground">
+                                  {phrase.definition}
+                                </p>
+                              )}
+                              {phrase.examples && phrase.examples.length > 0 && (
+                                <div className="mt-3 rounded-lg bg-muted/50 p-3">
+                                  <ul className="space-y-1 text-sm">
+                                    {phrase.examples.map((example, i) => (
+                                      <li key={i} className="flex items-start gap-2 text-foreground">
+                                        <span className="text-primary">•</span>
+                                        {example}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
           </div>
         )}
       </main>
