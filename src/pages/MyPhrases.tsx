@@ -9,6 +9,7 @@ import { playPCM } from "@/lib/audioService";
 import { Phrase, Session } from "@/types";
 import { RotateCcw, BookCheck, GraduationCap, ArrowLeft, Volume2 } from "lucide-react";
 import { FlashcardModal } from "@/components/FlashcardModal";
+import { QuizModal } from "@/components/QuizModal";
 
 interface PhraseWithSource extends Phrase {
   sourceTitle: string;
@@ -20,6 +21,7 @@ export default function MyPhrases() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [studyIds, setStudyIds] = useState<Set<string>>(new Set());
   const [showFlashcards, setShowFlashcards] = useState(false);
+  const [showQuiz, setShowQuiz] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -44,6 +46,10 @@ export default function MyPhrases() {
     });
     return phrases.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
   }, [sessions]);
+
+  const studyPhrases = useMemo(() => {
+    return allPhrases.filter((p) => studyIds.has(p.id));
+  }, [allPhrases, studyIds]);
 
   const toggleStudy = (phraseId: string) => {
     setStudyIds((prev) => {
@@ -106,6 +112,7 @@ export default function MyPhrases() {
             <Button
               className="bg-purple-500 hover:bg-purple-600"
               disabled={studyIds.size === 0}
+              onClick={() => setShowQuiz(true)}
             >
               <BookCheck className="mr-2 h-4 w-4" />
               Quiz
@@ -205,6 +212,12 @@ export default function MyPhrases() {
         open={showFlashcards}
         onClose={() => setShowFlashcards(false)}
         phrases={allPhrases}
+      />
+
+      <QuizModal
+        open={showQuiz}
+        onClose={() => setShowQuiz(false)}
+        phrases={studyPhrases}
       />
     </div>
   );
