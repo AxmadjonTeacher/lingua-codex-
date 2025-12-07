@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 import { SessionCard } from "@/components/SessionCard";
 import { NewSessionDialog } from "@/components/NewSessionDialog";
 import { Button } from "@/components/ui/button";
@@ -51,10 +52,10 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
       
-      <main className="container mx-auto max-w-5xl px-4 py-8">
+      <main className="container mx-auto max-w-5xl flex-1 px-4 py-8">
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <p className="text-muted-foreground">Loading sessions...</p>
@@ -99,6 +100,8 @@ export default function Index() {
           </>
         )}
       </main>
+
+      <Footer />
 
       <NewSessionDialog
         open={dialogOpen}

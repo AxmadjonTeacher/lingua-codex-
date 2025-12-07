@@ -3,6 +3,8 @@ export interface Phrase {
   text: string;
   definition?: string;
   examples?: string[];
+  audioData?: string;
+  createdAt?: number;
 }
 
 export interface Session {

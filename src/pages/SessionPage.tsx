@@ -128,7 +128,11 @@ export default function SessionPage() {
 
         {/* Right Panel - Notes */}
         <div className="hidden h-[calc(100vh-56px)] w-1/2 border-l border-border p-4 lg:block">
-          <Notepad value={session.notes} onChange={handleNotesChange} />
+          <Notepad 
+            value={session.notes} 
+            onChange={handleNotesChange}
+            onSavePhrase={handleAddPhrase}
+          />
         </div>
       </main>
     </div>

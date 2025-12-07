@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Phrase } from "@/types";
-import { Plus, X } from "lucide-react";
+import { Plus, X, Volume2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { playPCM } from "@/lib/audioService";
 
 interface PhraseBoxProps {
   phrases: Phrase[];
@@ -18,6 +19,12 @@ export function PhraseBox({ phrases, onAddPhrase, onRemovePhrase, maxPhrases }: 
     if (input.trim() && phrases.length < maxPhrases) {
       onAddPhrase(input.trim());
       setInput("");
+    }
+  };
+
+  const handlePlayAudio = async (audioData?: string) => {
+    if (audioData) {
+      await playPCM(audioData);
     }
   };
 
@@ -62,9 +69,32 @@ export function PhraseBox({ phrases, onAddPhrase, onRemovePhrase, maxPhrases }: 
               className="flex items-start gap-3 rounded-md border border-border bg-card p-3"
             >
               <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground">"{phrase.text}"</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium text-foreground">"{phrase.text}"</p>
+                  {phrase.audioData && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handlePlayAudio(phrase.audioData)}
+                      className="h-6 px-2 text-primary hover:text-primary/80"
+                    >
+                      <Volume2 className="h-3 w-3 mr-1" />
+                      Play
+                    </Button>
+                  )}
+                </div>
                 {phrase.definition && (
-                  <p className="mt-1 text-sm text-muted-foreground">{phrase.definition}</p>
+                  <p className="mt-1 text-sm italic text-muted-foreground">{phrase.definition}</p>
+                )}
+                {phrase.examples && phrase.examples.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {phrase.examples.map((example, idx) => (
+                      <li key={idx} className="text-sm text-muted-foreground flex items-start">
+                        <span className="mr-2">•</span>
+                        {example}
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </div>
               <Button
