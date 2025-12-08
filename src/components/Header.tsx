@@ -106,12 +106,16 @@ export function Header() {
             </Button>
           </a>
 
-          <Link to="/online-lessons">
-            <Button variant="outline" size="sm" className="gap-2 bg-pink-50 text-pink-700 border-pink-200 hover:bg-pink-100 hover:text-pink-800 hover:border-pink-300">
+          <div className="relative">
+            <Button variant="outline" size="sm" disabled className="gap-2 bg-pink-50 text-pink-700 border-pink-200">
               <Video className="h-4 w-4" />
               Online Lessons
             </Button>
-          </Link>
+            <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white leading-none">
+              SOON
+            </span>
+          </div>
+
 
           {user ? (
             <Button variant="outline" size="sm" className="gap-2" onClick={() => navigate("/profile")}>
