@@ -25,3 +25,15 @@ export interface Flashcard {
   definition: string;
   examples: string[];
 }
+
+export interface Lesson {
+  id: string;
+  title: string;
+  description: string | null;
+  videoUrl: string | null;
+  embedLink: string | null;
+  pdfUrls: string[] | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
