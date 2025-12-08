@@ -67,15 +67,12 @@ export function Header() {
                   </span>
                 </div>
 
-                <div className="relative">
-                  <Button variant="outline" size="sm" disabled className="w-full justify-start gap-2 bg-emerald-50 text-emerald-700 border-emerald-200">
+                <a href="https://alwhiteboard.vercel.app/" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" size="sm" className="w-full justify-start gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 hover:text-emerald-700 border-emerald-200 hover:border-emerald-300">
                     <Presentation className="h-4 w-4" />
                     White board
                   </Button>
-                  <span className="absolute -top-1.5 -right-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm z-10 border border-white leading-none">
-                    SOON
-                  </span>
-                </div>
+                </a>
 
                 <div className="relative">
                   <Button variant="outline" size="sm" disabled className="w-full justify-start gap-2 bg-purple-50 text-purple-700 border-purple-200">
