@@ -58,7 +58,7 @@ export function Header() {
           </div>
 
           <a href="https://app.sesame.com/" target="_blank" rel="noopener noreferrer">
-            <Button variant="outline" size="sm" className="gap-2 bg-sky-50 hover:bg-sky-100 text-sky-700 border-sky-200">
+            <Button variant="outline" size="sm" className="gap-2 bg-sky-50 hover:bg-sky-100 text-sky-700 hover:text-sky-700 border-sky-200 hover:border-sky-300">
               <Mic className="h-4 w-4" />
               Speaking
             </Button>
