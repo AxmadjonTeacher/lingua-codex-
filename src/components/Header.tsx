@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { User } from "@supabase/supabase-js";
-import { User as UserIcon, Mail, Gamepad2, Mic, Video, Menu, Columns, Presentation, Moon, Sun } from "lucide-react";
+import { User as UserIcon, Mail, Gamepad2, Mic, Video, Menu, Columns, Presentation } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -12,12 +12,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { migrateLocalSessions } from "@/lib/storage";
-import { useTheme } from "@/components/ThemeProvider";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -56,22 +54,7 @@ export function Header() {
             </SheetTrigger>
             <SheetContent side="left">
               <SheetHeader>
-                <div className="flex items-center justify-between">
-                  <SheetTitle>Menu</SheetTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={toggleTheme}
-                    className="h-8 w-8 transition-all hover:rotate-12"
-                  >
-                    {theme === "light" ? (
-                      <Moon className="h-4 w-4" />
-                    ) : (
-                      <Sun className="h-4 w-4" />
-                    )}
-                    <span className="sr-only">Toggle theme</span>
-                  </Button>
-                </div>
+                <SheetTitle>Menu</SheetTitle>
               </SheetHeader>
               <div className="flex flex-col gap-4 py-4">
                 <div className="relative">

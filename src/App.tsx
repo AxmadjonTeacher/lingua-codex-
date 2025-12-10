@@ -11,30 +11,27 @@ import MyPhrases from "./pages/MyPhrases";
 import OnlineLessons from "./pages/OnlineLessons";
 import LessonViewer from "./pages/LessonViewer";
 import NotFound from "./pages/NotFound";
-import { ThemeProvider } from "./components/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="light" storageKey="lingua-codex-theme">
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/my-phrases" element={<MyPhrases />} />
-            <Route path="/online-lessons" element={<OnlineLessons />} />
-            <Route path="/lesson/:id" element={<LessonViewer />} />
-            <Route path="/session/:id" element={<SessionPage />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </ThemeProvider>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/my-phrases" element={<MyPhrases />} />
+          <Route path="/online-lessons" element={<OnlineLessons />} />
+          <Route path="/lesson/:id" element={<LessonViewer />} />
+          <Route path="/session/:id" element={<SessionPage />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
   </QueryClientProvider>
 );
 
